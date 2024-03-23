@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="grid gap-2 w-full break-all">
-        Showing {{ list.length }} elements
+        <span>Showing {{ list.length }} elements <span v-if="+time">in {{ time }} secs.</span></span>
         <div v-for="el in list" :key="el">
           <a v-if="isLink(el)" :href="el" class="text-blue-600 dark:text-blue-500" target="_blank">{{ el }}</a>
           <span v-else>{{ el }}</span>
@@ -41,10 +41,10 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { nextTick, reactive, ref } from 'vue'
 
 const list = reactive<string[]>([])
-
+const time = ref("")
 const datos = ref("")
 
 const removeFirst = function () {
@@ -68,26 +68,37 @@ const replace = () => {
 }
 
 const empty = () => {
+  time.value = ""
   list.length = 0
 }
 
 const initRandomList = () => {
   list.length = 0
-  const templist = mix(datos.value.split("\n")
-    .filter(el => el))
+  const templist = mix(datos.value.split("\n").filter(el => el))
   list.push(...templist)
 }
 
 const mix = <T>(list: T[]): T[] => {
-  return list.map(el => ({ el, i: Math.random() }))
-    .sort(({ i: A }, { i: B }) => A - B)
-    .map(({ el }) => el)
+  // return list.map(el => ({ el, i: Math.random() }))
+  //   .sort(({ i: A }, { i: B }) => A - B)
+  //   .map(({ el }) => el)
+  time.value = ""
+  const start = Date.now();
+  list.forEach((_value, index, array) => {
+    const newIndex = Math.floor(Math.random() * array.length)
+    const temp = array[index]
+    array[index] = array[newIndex]
+    array[newIndex] = temp
+  })
+  nextTick(() => {
+    const end = Date.now();
+    time.value = ((end - start) / 1000.0).toFixed(3)
+  })
+  return list;
 }
 
 const remix = () => {
-  const templist = mix(list)
-  list.length = 0
-  list.push(...templist)
+  mix(list)
 }
 
 </script>

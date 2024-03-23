@@ -8,29 +8,29 @@
           <label>Datos:</label>
           <textarea rows="10" class="rounded border text-black px-2 py-1 font-mono" v-model="datos"></textarea>
         </div>
-        <div class="grid gap-2 grid-cols-2">
-          <button class="rounded-full p-2 bg-blue-700 text-white" @click="initRandomList">
+        <div class="grid gap-2 md:flex grid-cols-2 sm:grid-cols-3">
+          <button class="rounded-full p-2 min-w-32 bg-blue-700 text-white" @click="initRandomList">
             Mix
           </button>
-          <button v-if="list.length > 1" class="rounded-full p-2 bg-indigo-900 text-white" @click="remix">
+          <button v-if="list.length > 1" class="rounded-full p-2 min-w-32 bg-indigo-900 text-white" @click="remix">
             Remix
           </button>
-          <button class="rounded-full p-2 bg-red-700 text-white" @click="removeFirst">
+          <button class="rounded-full p-2 min-w-32 bg-red-700 text-white" @click="removeFirst">
             Remove
           </button>
-          <button class="rounded-full p-2 bg-green-700 text-white" @click="popOne">
+          <button class="rounded-full p-2 min-w-32 bg-green-700 text-white" @click="popOne">
             Pop One
           </button>
-          <button class="rounded-full p-2 bg-amber-700 text-white" @click="replace">
+          <button class="rounded-full p-2 min-w-32 bg-amber-700 text-white" @click="replace">
             Replace
           </button>
-          <button v-if="list.length > 0" class="rounded-full p-2 bg-slate-700 text-white" @click="empty">
+          <button v-if="list.length > 0" class="rounded-full p-2 min-w-32 bg-slate-700 text-white" @click="empty">
             Empty
           </button>
         </div>
       </div>
       <div class="grid gap-2 w-full break-all">
-        Showing {{ list.length }} elements
+        <span>Showing {{ list.length }} elements <span v-if="+time">in {{ time }} secs.</span></span>
         <div v-for="el in list" :key="el">
           <a v-if="isLink(el)" :href="el" class="text-blue-600 dark:text-blue-500" target="_blank">{{ el }}</a>
           <span v-else>{{ el }}</span>
@@ -41,10 +41,10 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { nextTick, reactive, ref } from 'vue'
 
 const list = reactive<string[]>([])
-
+const time = ref("")
 const datos = ref("")
 
 const removeFirst = function () {
@@ -68,6 +68,7 @@ const replace = () => {
 }
 
 const empty = () => {
+  time.value = ""
   list.length = 0
 }
 
@@ -79,9 +80,17 @@ const initRandomList = () => {
 }
 
 const mix = <T>(list: T[]): T[] => {
-  return list.map(el => ({ el, i: Math.random() }))
+  const start = Date.now();
+
+  const newlist = list.map(el => ({ el, i: Math.random() }))
     .sort(({ i: A }, { i: B }) => A - B)
     .map(({ el }) => el)
+
+    nextTick(() => {
+    const end = Date.now();
+    time.value = ((end - start) / 1000.0).toFixed(3)
+  })
+  return newlist
 }
 
 const remix = () => {
